@@ -42,7 +42,7 @@ const (
 	// 参数：command string。
 	EventNameRunCommandSent = Name + ".Run.Command.Sent"
 	// EventNameRunChunkGroupFinish 区块组处理完成事件。
-	// 参数：commandCount int。
+	// 参数：无。
 	EventNameRunChunkGroupFinish = Name + ".Run.ChunkGroup.Finish"
 	// EventNameRunFinish 构建主流程完成事件。
 	// 参数：无。

@@ -79,7 +79,7 @@ func (b *BuildTask) run(ctx context.Context) error {
 		// 只有当前区块组的全部命令发送成功后，才推进持久化断点。
 		// 如果中途暂停或失败，Resume 会从这个区块组重新开始，避免跳过未完成内容。
 		b.updateCurrentChunk(progress + 1)
-		b.publish(EventNameRunChunkGroupFinish, len(commands))
+		b.publish(EventNameRunChunkGroupFinish)
 	}
 	b.publish(EventNameRunFinish)
 	return nil
