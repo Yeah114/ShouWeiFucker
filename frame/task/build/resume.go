@@ -7,7 +7,7 @@ func (b *BuildTask) Resume() error {
 	if err := b.Init(); err != nil {
 		return fmt.Errorf("BuildTask.Resume: %w", err)
 	}
-	ctx := b.startRunContext()
+	ctx := b.startTaskContext()
 	if err := b.run(ctx); err != nil {
 		return fmt.Errorf("BuildTask.Resume: %w", err)
 	}

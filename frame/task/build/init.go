@@ -80,7 +80,7 @@ func (b *BuildTask) init() error {
 //
 // 每次调用都会按当前 checkpoint 重新创建运行时对象；如果旧世界已打开，会先关闭旧世界。
 func (b *BuildTask) Init() error {
-	b.cancelRun()
+	b.cancelTask()
 	if err := b.init(); err != nil {
 		return fmt.Errorf("BuildTask.Init: %w", err)
 	}

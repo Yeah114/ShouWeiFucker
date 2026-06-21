@@ -1,6 +1,6 @@
 package build
 
 func (b *BuildTask) Pause() error {
-	b.cancelRun()
+	b.cancelTask()
 	return nil
 }

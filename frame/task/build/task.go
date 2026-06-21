@@ -108,9 +108,9 @@ type BuildTask struct {
 	chunkManager *chunk_manager.ChunkManager
 	blockBuilder *block_builder.BlockBuilder
 	limiter      ratelimit.Limiter
-	runMu        sync.Mutex
-	runCtx       context.Context
-	runCancel    context.CancelFunc
+	taskMu       sync.Mutex
+	taskCtx      context.Context
+	taskCancel   context.CancelFunc
 }
 
 func (c *BuildTaskConfig) NewTask(frame define.Frame) define.Task {
