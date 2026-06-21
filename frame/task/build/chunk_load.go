@@ -50,8 +50,8 @@ func (b *BuildTask) waitChunkLoad(ctx context.Context, groupPos define.ChunkPos)
 
 	b.publish(EventNameRunChunkGroupWaitLoadStart, groupPos)
 	for attempt := 1; ; attempt++ {
-		if err := b.checkTaskContext(ctx); err != nil {
-			return fmt.Errorf("BuildTask.waitChunkLoad: %w", err)
+		if !b.checkContext() {
+			return fmt.Errorf("BuildTask.waitChunkLoad: %w", context.Canceled)
 		}
 
 		resp, timeout, err := b.sendWSCommandWithTimeout(ctx, command, chunkLoadProbeTimeout)

@@ -18,8 +18,8 @@ func (b *BuildTask) run(ctx context.Context) error {
 	b.publish(EventNameRunStart, b.world.Size(), total)
 	for ; progress < total; progress++ {
 		// 在进入新组前先检查暂停/关闭请求，避免已经取消后继续读取世界或发送命令。
-		if err := b.checkTaskContext(ctx); err != nil {
-			return fmt.Errorf("BuildTask.run: %w", err)
+		if !b.checkContext() {
+			return fmt.Errorf("BuildTask.run: %w", context.Canceled)
 		}
 
 		// 先按当前进度算出区块组坐标并标记区块组开始，后续移动、等待加载和读取都属于这一组。
@@ -53,8 +53,8 @@ func (b *BuildTask) run(ctx context.Context) error {
 		// 命令发送统一走封装方法，保证限速器对所有构建命令生效。
 		for _, command := range commands {
 			// 每条命令前都检查一次取消，暂停时最多只会多完成当前正在发送的一条命令。
-			if err := b.checkTaskContext(ctx); err != nil {
-				return fmt.Errorf("BuildTask.run: %w", err)
+			if !b.checkContext() {
+				return fmt.Errorf("BuildTask.run: %w", context.Canceled)
 			}
 			if err := b.sendSettingsCommand(ctx, command, false); err != nil {
 				return fmt.Errorf("BuildTask.run: send build command: %w", err)
