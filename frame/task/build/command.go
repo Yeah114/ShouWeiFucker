@@ -11,6 +11,7 @@ import (
 
 // takeCommandLimit 在发送命令前应用任务限速器。
 func (b *BuildTask) takeCommandLimit() {
+return
 	if b.limiter == nil {
 		return
 	}

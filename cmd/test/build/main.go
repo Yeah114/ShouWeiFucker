@@ -18,14 +18,14 @@ var (
 	sourceDimension = define.Dimension(define.DimensionIDOverworld)
 	targetDimension = define.Dimension(define.DimensionIDOverworld)
 
-	speed          = 3000
+	speed          = 8000
 	chunkGroupSide = 2
 )
 
 var (
 	sourceStartPos = define.BlockPos{0, 0, 0}
 	sourceEndPos   = define.BlockPos{170, 320, 220}
-	targetStartPos = define.BlockPos{0, 0, 0}
+	targetStartPos = define.BlockPos{1200, 0, 1200}
 )
 
 func main() {
@@ -120,9 +120,11 @@ func registerBuildEvents(frame define.Frame) {
 	frame.EventBus().Subscribe(build.EventNameRunCommandsGenerated, func(commandCount int) {
 		fmt.Printf("[%s] commands generated count=%d\n", time.Now().Format(time.RFC3339), commandCount)
 	})
-	frame.EventBus().Subscribe(build.EventNameRunCommandSent, func(command string) {
-		fmt.Printf("[%s] command sent %q\n", time.Now().Format(time.RFC3339), command)
-	})
+	/*
+		frame.EventBus().Subscribe(build.EventNameRunCommandSent, func(command string) {
+			fmt.Printf("[%s] command sent %q\n", time.Now().Format(time.RFC3339), command)
+		})
+	*/
 	frame.EventBus().Subscribe(build.EventNameRunChunkGroupFinish, func() {
 		fmt.Printf("[%s] chunk group finish elapsed=%s\n", time.Now().Format(time.RFC3339), time.Since(groupStartedAt))
 	})

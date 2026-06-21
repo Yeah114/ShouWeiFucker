@@ -19,9 +19,11 @@ type Frame struct {
 	config           FrameConfig
 }
 
+type ClientConfig = client.FrameConfig
+
 // FrameConfig 描述 Frame 的创建参数。
 type FrameConfig struct {
-	client.FrameConfig
+	ClientConfig
 	// Embedded 标记是否使用嵌入式运行模式，当前暂不参与逻辑。
 	Embedded bool
 }
@@ -68,7 +70,7 @@ func (f *Frame) Connect(ctx context.Context) error {
 		return nil
 	}
 
-	if _, err := f.client.Frame().StartConnection(ctx, f.config.FrameConfig); err != nil {
+	if _, err := f.client.Frame().StartConnection(ctx, f.config.ClientConfig); err != nil {
 		return fmt.Errorf("Frame.Connect: start connection: %w", err)
 	}
 
