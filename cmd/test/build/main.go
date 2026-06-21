@@ -14,7 +14,7 @@ import (
 const (
 	coreAddr = "127.0.0.1:50051"
 
-	sourceWorldPath = "/path/to/source.mcworld"
+	sourceWorldPath = "VOH3-0主城@[0,0,0]~[170,320,220].mcworld"
 
 	sourceDimension = define.Dimension(define.DimensionIDOverworld)
 	targetDimension = define.Dimension(define.DimensionIDOverworld)
@@ -37,13 +37,13 @@ func main() {
 
 func run() error {
 	ctx := context.Background()
-	coreClient, conn, err := client.Dial(ctx, coreAddr)
+	client, err := client.DialContext(ctx, "tcp", coreAddr)
 	if err != nil {
 		return fmt.Errorf("dial core %q: %w", coreAddr, err)
 	}
-	defer conn.Close()
+	defer client.Close()
 
-	frame := frame.New(coreClient)
+	frame := frame.FrameConfig{}.New(client)
 	task := build.BuildTaskConfig{
 		BuildTaskWorldConfig: build.BuildTaskWorldConfig{
 			WorldPath:      sourceWorldPath,

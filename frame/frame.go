@@ -17,16 +17,17 @@ type Frame struct {
 	currentTaskIndex int
 }
 
-// New 创建一个默认事件总线的 Frame。
-func New(coreClient *client.Client) *Frame {
-	return NewWithEventBus(coreClient, EventBus.New())
+// FrameConfig 描述 Frame 的创建参数。
+type FrameConfig struct {
+	// Embedded 标记是否使用嵌入式运行模式，当前暂不参与逻辑。
+	Embedded bool
 }
 
-// NewWithEventBus 创建一个使用指定事件总线的 Frame。
-func NewWithEventBus(coreClient *client.Client, bus EventBus.Bus) *Frame {
+// New 创建一个默认事件总线的 Frame。
+func (c FrameConfig) New(coreClient *client.Client) *Frame {
 	return &Frame{
 		client:   coreClient,
-		eventBus: bus,
+		eventBus: EventBus.New(),
 	}
 }
 
