@@ -19,9 +19,6 @@ func (b *BuildTask) run(ctx context.Context) error {
 	for ; progress < total; progress++ {
 		// 在进入新组前先检查暂停/关闭请求，避免已经取消后继续读取世界或发送命令。
 		if err := b.checkTaskContext(ctx); err != nil {
-			if b.taskCanceled(ctx, err) {
-				return nil
-			}
 			return fmt.Errorf("BuildTask.run: %w", err)
 		}
 
@@ -32,17 +29,11 @@ func (b *BuildTask) run(ctx context.Context) error {
 		// 移动机器人到目标区块组附近，保证后续读取和构建尽量发生在目标区块加载范围内。
 		targetPos, err := b.moveBotToChunk(ctx, groupPos)
 		if err != nil {
-			if b.taskCanceled(ctx, err) {
-				return nil
-			}
 			return fmt.Errorf("BuildTask.run: move bot to chunk: %w", err)
 		}
 		b.publish(EventNameRunChunkGroupMove, groupPos, targetPos)
 
 		if err := b.waitChunkLoad(ctx, groupPos); err != nil {
-			if b.taskCanceled(ctx, err) {
-				return nil
-			}
 			return fmt.Errorf("BuildTask.run: wait chunk load: %w", err)
 		}
 
@@ -63,15 +54,9 @@ func (b *BuildTask) run(ctx context.Context) error {
 		for _, command := range commands {
 			// 每条命令前都检查一次取消，暂停时最多只会多完成当前正在发送的一条命令。
 			if err := b.checkTaskContext(ctx); err != nil {
-				if b.taskCanceled(ctx, err) {
-					return nil
-				}
 				return fmt.Errorf("BuildTask.run: %w", err)
 			}
 			if err := b.sendSettingsCommand(ctx, command, false); err != nil {
-				if b.taskCanceled(ctx, err) {
-					return nil
-				}
 				return fmt.Errorf("BuildTask.run: send build command: %w", err)
 			}
 			b.publish(EventNameRunCommandSent, command)

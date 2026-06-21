@@ -43,11 +43,6 @@ func (b *BuildTask) checkTaskContext(ctx context.Context) error {
 	return nil
 }
 
-// taskCanceled 返回错误或上下文是否表示任务已被取消。
-func (b *BuildTask) taskCanceled(ctx context.Context, err error) bool {
-	return errors.Is(err, context.Canceled) || ctx.Err() != nil
-}
-
 // cancelTask 请求当前运行中的任务尽快停止。
 func (b *BuildTask) cancelTask() {
 	b.taskMu.Lock()
@@ -56,4 +51,12 @@ func (b *BuildTask) cancelTask() {
 	if b.taskCancel != nil {
 		b.taskCancel()
 	}
+}
+
+// Canceled 返回当前任务上下文是否已经被取消。
+func (b *BuildTask) Canceled() bool {
+	b.taskMu.Lock()
+	defer b.taskMu.Unlock()
+
+	return b.taskCtx != nil && b.taskCtx.Err() != nil
 }
