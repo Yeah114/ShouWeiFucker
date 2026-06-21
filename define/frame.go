@@ -8,6 +8,10 @@ import (
 type Frame interface {
 	Client() *client.Client
 	EventBus() EventBus.Bus
+	// 所有任务
+	Tasks() []Task
+	// 当前任务索引
+	CurrentTaskIndex() int
 	// 添加任务
 	AddTask(task Task) Frame
 	// 运行所有任务

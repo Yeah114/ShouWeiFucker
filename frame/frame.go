@@ -13,8 +13,8 @@ import (
 type Frame struct {
 	client           *client.Client
 	eventBus         EventBus.Bus
-	Tasks            []define.Task
-	CurrentTaskIndex int
+	tasks            []define.Task
+	currentTaskIndex int
 }
 
 // New 创建一个默认事件总线的 Frame。
@@ -40,16 +40,26 @@ func (f *Frame) EventBus() EventBus.Bus {
 	return f.eventBus
 }
 
+// Tasks 返回当前框架持有的任务列表。
+func (f *Frame) Tasks() []define.Task {
+	return f.tasks
+}
+
+// CurrentTaskIndex 返回当前正在处理的任务索引。
+func (f *Frame) CurrentTaskIndex() int {
+	return f.currentTaskIndex
+}
+
 // AddTask 添加任务到框架并返回自身，便于链式调用。
 func (f *Frame) AddTask(task define.Task) define.Frame {
-	f.Tasks = append(f.Tasks, task)
+	f.tasks = append(f.tasks, task)
 	return f
 }
 
 // Run 按添加顺序启动所有任务。
 func (f *Frame) Run() error {
-	for i, task := range f.Tasks {
-		f.CurrentTaskIndex = i
+	for i, task := range f.tasks {
+		f.currentTaskIndex = i
 		if err := task.Start(); err != nil {
 			return fmt.Errorf("Frame.Run: start task %q: %w", task.Name(), err)
 		}
@@ -59,9 +69,9 @@ func (f *Frame) Run() error {
 
 // Stop 停止所有任务。
 func (f *Frame) Stop() error {
-	for i := len(f.Tasks) - 1; i >= 0; i-- {
-		f.CurrentTaskIndex = i
-		task := f.Tasks[i]
+	for i := len(f.tasks) - 1; i >= 0; i-- {
+		f.currentTaskIndex = i
+		task := f.tasks[i]
 		if err := task.Pause(); err != nil {
 			return fmt.Errorf("Frame.Stop: pause task %q: %w", task.Name(), err)
 		}
@@ -71,9 +81,9 @@ func (f *Frame) Stop() error {
 
 // Close 停止所有任务并关闭 Core 连接。
 func (f *Frame) Close() error {
-	for i := len(f.Tasks) - 1; i >= 0; i-- {
-		f.CurrentTaskIndex = i
-		task := f.Tasks[i]
+	for i := len(f.tasks) - 1; i >= 0; i-- {
+		f.currentTaskIndex = i
+		task := f.tasks[i]
 		if err := task.Close(); err != nil {
 			return fmt.Errorf("Frame.Close: close task %q: %w", task.Name(), err)
 		}
