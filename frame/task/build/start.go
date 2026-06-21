@@ -28,8 +28,8 @@ func (b *BuildTask) run(ctx context.Context) error {
 
 		groupPos := b.chunkManager.ChunkGroupPos(progress)
 		targetPos := b.chunkGroupTargetPos(groupPos)
-		if err := b.moveBotToChunkGroup(ctx, targetPos); err != nil {
-			return fmt.Errorf("BuildTask.run: move bot to chunk group: %w", err)
+		if err := b.moveBotToChunkPos(ctx, targetPos); err != nil {
+			return fmt.Errorf("BuildTask.run: move bot to chunk pos: %w", err)
 		}
 		b.publish(EventNameRunChunkGroupMove, progress, groupPos, targetPos)
 

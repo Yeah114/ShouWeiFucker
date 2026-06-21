@@ -62,10 +62,10 @@ func (b *BuildTask) sendChat(ctx context.Context, content string) error {
 	return nil
 }
 
-// moveBotToChunkGroup 将机器人移动到目标世界中当前区块组的起点附近。
-func (b *BuildTask) moveBotToChunkGroup(ctx context.Context, pos define.BlockPos) error {
+// moveBotToChunkPos 将机器人移动到目标世界中的指定区块位置附近。
+func (b *BuildTask) moveBotToChunkPos(ctx context.Context, pos define.BlockPos) error {
 	if err := b.sendPlayerCommand(ctx, fmt.Sprintf("tp @s %d %d %d", pos.X(), pos.Y(), pos.Z())); err != nil {
-		return fmt.Errorf("BuildTask.moveBotToChunkGroup: %w", err)
+		return fmt.Errorf("BuildTask.moveBotToChunkPos: %w", err)
 	}
 	return nil
 }
