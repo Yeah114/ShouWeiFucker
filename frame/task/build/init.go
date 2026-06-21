@@ -33,6 +33,13 @@ const (
 //   - 按配置和断点创建区块组管理器。
 func (b *BuildTask) init() error {
 	b.publish(EventNameInitStart)
+	if b.world != nil && b.world.World() != nil {
+		_ = b.world.World().CloseWorld()
+	}
+	b.world = nil
+	b.chunkManager = nil
+	b.blockBuilder = nil
+
 	b.limiter = ratelimit.New(b.speed())
 
 	b.publish(EventNameInitOpenWorld, b.WorldPath)
@@ -74,21 +81,10 @@ func (b *BuildTask) init() error {
 // 每次调用都会按当前 checkpoint 重新创建运行时对象；如果旧世界已打开，会先关闭旧世界。
 func (b *BuildTask) Init() error {
 	b.cancelRun()
-	b.resetRuntime()
 	if err := b.init(); err != nil {
 		return fmt.Errorf("BuildTask.Init: %w", err)
 	}
 	return nil
-}
-
-// resetRuntime 释放旧运行时对象。
-func (b *BuildTask) resetRuntime() {
-	if b.world != nil && b.world.World() != nil {
-		_ = b.world.World().CloseWorld()
-	}
-	b.world = nil
-	b.chunkManager = nil
-	b.blockBuilder = nil
 }
 
 // openBedrockWorld 根据 WorldPath 类型打开源世界。
