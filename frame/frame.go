@@ -12,13 +12,17 @@ import (
 // Frame 是 Fatalder 的运行框架实现，负责持有 Core 客户端、事件总线和任务列表。
 type Frame struct {
 	client           *client.Client
+	closeClient      bool
+	listener         coreListener
 	eventBus         EventBus.Bus
 	tasks            []define.Task
 	currentTaskIndex int
+	config           FrameConfig
 }
 
 // FrameConfig 描述 Frame 的创建参数。
 type FrameConfig struct {
+	client.FrameConfig
 	// Embedded 标记是否使用嵌入式运行模式，当前暂不参与逻辑。
 	Embedded bool
 }
@@ -28,6 +32,7 @@ func (c FrameConfig) New(coreClient *client.Client) *Frame {
 	return &Frame{
 		client:   coreClient,
 		eventBus: EventBus.New(),
+		config:   c,
 	}
 }
 
@@ -51,8 +56,11 @@ func (f *Frame) CurrentTaskIndex() int {
 	return f.currentTaskIndex
 }
 
-// Connect 通过连接状态检查 Core 客户端是否已经连接。
+// Connect 确保 Core 客户端已经连接。
 func (f *Frame) Connect(ctx context.Context) error {
+	if err := f.initClient(); err != nil {
+		return fmt.Errorf("Frame.Connect: init client: %w", err)
+	}
 	if f.client == nil {
 		return fmt.Errorf("Frame.Connect: nil client")
 	}
@@ -60,8 +68,20 @@ func (f *Frame) Connect(ctx context.Context) error {
 	if err != nil {
 		return fmt.Errorf("Frame.Connect: get connection state: %w", err)
 	}
+	if state.Connected {
+		return nil
+	}
+
+	if _, err := f.client.Frame().StartConnection(ctx, f.config.FrameConfig); err != nil {
+		return fmt.Errorf("Frame.Connect: start connection: %w", err)
+	}
+
+	state, err = f.client.Frame().GetConnectionState(ctx)
+	if err != nil {
+		return fmt.Errorf("Frame.Connect: get connection state after start: %w", err)
+	}
 	if !state.Connected {
-		return fmt.Errorf("Frame.Connect: core disconnected: %s", state.CloseReason)
+		return fmt.Errorf("Frame.Connect: core disconnected after start: %s", state.CloseReason)
 	}
 	return nil
 }
@@ -133,11 +153,22 @@ func (f *Frame) Close() error {
 	if err := f.Stop(); err != nil {
 		return fmt.Errorf("Frame.Close: %w", err)
 	}
-	if f.client == nil {
-		return nil
+	if f.client != nil {
+		if err := f.client.Frame().StopConnection(context.Background()); err != nil {
+			return fmt.Errorf("Frame.Close: stop core connection: %w", err)
+		}
 	}
-	if err := f.client.Frame().StopConnection(context.Background()); err != nil {
-		return fmt.Errorf("Frame.Close: stop core connection: %w", err)
+	if f.closeClient && f.client != nil {
+		if err := f.client.Close(); err != nil {
+			return fmt.Errorf("Frame.Close: close client: %w", err)
+		}
+	}
+	f.client = nil
+	if f.listener != nil {
+		if err := f.listener.Close(); err != nil {
+			return fmt.Errorf("Frame.Close: close listener: %w", err)
+		}
+		f.listener = nil
 	}
 	return nil
 }
