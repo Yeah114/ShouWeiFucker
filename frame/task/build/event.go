@@ -2,25 +2,35 @@ package build
 
 const (
 	// EventNameInitStart 初始化开始事件。
+	// 参数：无。
 	EventNameInitStart = Name + ".Init.Start"
 	// EventNameInitOpenWorld 开始打开源世界事件。
+	// 参数：worldPath string。
 	EventNameInitOpenWorld = Name + ".Init.OpenWorld"
 	// EventNameInitFinish 初始化完成事件。
+	// 参数：无。
 	EventNameInitFinish = Name + ".Init.Finish"
 
 	// EventNameRunStart 构建主流程开始事件。
+	// 参数：无。
 	EventNameRunStart = Name + ".Run.Start"
 	// EventNameRunChunkGroupStart 区块组开始处理事件。
+	// 参数：progress int, total int。
 	EventNameRunChunkGroupStart = Name + ".Run.ChunkGroup.Start"
 	// EventNameRunChunkGroupLoaded 区块组数据读取完成事件。
+	// 参数：progress int, total int, chunks map[define.ChunkPos]*chunk.Chunk, nbts map[define.ChunkPos][]map[string]any。
 	EventNameRunChunkGroupLoaded = Name + ".Run.ChunkGroup.Loaded"
 	// EventNameRunCommandsGenerated 区块组构建命令生成完成事件。
+	// 参数：progress int, total int, commandCount int。
 	EventNameRunCommandsGenerated = Name + ".Run.Commands.Generated"
 	// EventNameRunCommandSent 单条构建命令发送完成事件。
+	// 参数：progress int, total int, command string。
 	EventNameRunCommandSent = Name + ".Run.Command.Sent"
 	// EventNameRunChunkGroupFinish 区块组处理完成事件。
+	// 参数：progress int, total int, commandCount int。
 	EventNameRunChunkGroupFinish = Name + ".Run.ChunkGroup.Finish"
 	// EventNameRunFinish 构建主流程完成事件。
+	// 参数：progress int, total int。
 	EventNameRunFinish = Name + ".Run.Finish"
 )
 
