@@ -26,18 +26,17 @@ func (b *BuildTask) run(ctx context.Context) error {
 	for ; progress < total; progress++ {
 		b.publish(EventNameRunChunkGroupStart, progress)
 
-		groupPos := b.chunkManager.ChunkGroupPos(progress)
+		// 由 ChunkManager 统一推进区块组进度，并返回当前组的方块数据和 NBT 数据。
+		groupPos, chunks, nbts, err := b.chunkManager.NextChunkGroup()
+		if err != nil {
+			return fmt.Errorf("BuildTask.run: next chunk group: %w", err)
+		}
 		targetPos, err := b.moveBotToChunk(ctx, groupPos)
 		if err != nil {
 			return fmt.Errorf("BuildTask.run: move bot to chunk: %w", err)
 		}
 		b.publish(EventNameRunChunkGroupMove, progress, groupPos, targetPos)
 
-		// 由 ChunkManager 统一推进区块组进度，并返回当前组的方块数据和 NBT 数据。
-		chunks, nbts, err := b.chunkManager.NextChunkGroup()
-		if err != nil {
-			return fmt.Errorf("BuildTask.run: next chunk group: %w", err)
-		}
 		b.updateCurrentChunk(progress + 1)
 		b.publish(EventNameRunChunkGroupLoaded, progress, chunks, nbts)
 
