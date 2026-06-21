@@ -37,7 +37,7 @@ func (b *BuildTask) run(ctx context.Context) error {
 			}
 			return fmt.Errorf("BuildTask.run: move bot to chunk: %w", err)
 		}
-		b.publish(EventNameRunChunkGroupMove, progress, groupPos, targetPos)
+		b.publish(EventNameRunChunkGroupMove, groupPos, targetPos)
 
 		if err := b.waitChunkLoad(ctx, groupPos); err != nil {
 			if b.taskCanceled(ctx, err) {
@@ -52,12 +52,12 @@ func (b *BuildTask) run(ctx context.Context) error {
 		if err != nil {
 			return fmt.Errorf("BuildTask.run: next chunk group: %w", err)
 		}
-		b.publish(EventNameRunChunkGroupLoaded, progress, chunks, nbts)
+		b.publish(EventNameRunChunkGroupLoaded, chunks, nbts)
 
 		// 当前阶段只生成普通方块命令；后续 NBT 方块和命令方块流程应在这里之后接入。
 		// 这里不会修改 checkpoint，命令全部发送完成后才认为这一组真正完成。
 		commands := b.blockBuilder.BuildCommands(chunks)
-		b.publish(EventNameRunCommandsGenerated, progress, len(commands))
+		b.publish(EventNameRunCommandsGenerated, len(commands))
 
 		// 命令发送统一走封装方法，保证限速器对所有构建命令生效。
 		for _, command := range commands {
@@ -74,14 +74,14 @@ func (b *BuildTask) run(ctx context.Context) error {
 				}
 				return fmt.Errorf("BuildTask.run: send build command: %w", err)
 			}
-			b.publish(EventNameRunCommandSent, progress, command)
+			b.publish(EventNameRunCommandSent, command)
 		}
 		// 只有当前区块组的全部命令发送成功后，才推进持久化断点。
 		// 如果中途暂停或失败，Resume 会从这个区块组重新开始，避免跳过未完成内容。
 		b.updateCurrentChunk(progress + 1)
-		b.publish(EventNameRunChunkGroupFinish, progress, len(commands))
+		b.publish(EventNameRunChunkGroupFinish, len(commands))
 	}
-	b.publish(EventNameRunFinish, progress)
+	b.publish(EventNameRunFinish)
 	return nil
 }
 
