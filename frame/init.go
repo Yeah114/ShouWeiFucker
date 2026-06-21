@@ -16,6 +16,9 @@ func (f *Frame) initClient() error {
 	if f.client != nil {
 		return nil
 	}
+	if !f.config.Embedded {
+		return fmt.Errorf("Frame.initClient: nil client")
+	}
 
 	pipeName := "fatalder-" + uuid.NewString()
 	listener, err := core_server.Listen("pipe", pipeName, nil)
