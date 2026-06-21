@@ -3,6 +3,7 @@ package build
 import (
 	"context"
 	"fmt"
+	"math"
 
 	packet_pb "github.com/EmptyDea-Team/EmptyDea-core-api/pb/minecraft/protocol/packet"
 	"github.com/Yeah114/Fatalder/define"
@@ -62,20 +63,21 @@ func (b *BuildTask) sendChat(ctx context.Context, content string) error {
 	return nil
 }
 
-// moveBotToChunk 将机器人移动到目标世界中的指定区块附近。
-func (b *BuildTask) moveBotToChunk(ctx context.Context, chunkPos define.ChunkPos) (define.BlockPos, error) {
-	pos := b.chunkGroupTargetPos(chunkPos)
+// moveBotToChunkGroup 将机器人移动到目标区块组中心。
+func (b *BuildTask) moveBotToChunkGroup(ctx context.Context, groupPos define.ChunkPos) (define.BlockPos, error) {
+	pos := b.chunkGroupTargetPos(groupPos)
 	if err := b.sendPlayerCommand(ctx, fmt.Sprintf("tp @s %d %d %d", pos.X(), pos.Y(), pos.Z())); err != nil {
-		return define.BlockPos{}, fmt.Errorf("BuildTask.moveBotToChunk: %w", err)
+		return define.BlockPos{}, fmt.Errorf("BuildTask.moveBotToChunkGroup: %w", err)
 	}
 	return pos, nil
 }
 
-// chunkGroupTargetPos 将区块组坐标转换成目标世界中的方块坐标。
+// chunkGroupTargetPos 将区块组坐标转换成目标世界中的区块组中心坐标。
 func (b *BuildTask) chunkGroupTargetPos(groupPos define.ChunkPos) define.BlockPos {
+	groupWidth := float64(b.chunkGroupSide() * 16)
 	return define.BlockPos{
-		b.StartPos.X() + int(groupPos.X())*b.chunkGroupSide()*16,
-		b.StartPos.Y(),
-		b.StartPos.Z() + int(groupPos.Z())*b.chunkGroupSide()*16,
+		int(math.Floor(float64(b.StartPos.X()+int(groupPos.X())*b.chunkGroupSide()*16) + groupWidth/2 - 0.5)),
+		define.WorldRange[1],
+		int(math.Floor(float64(b.StartPos.Z()+int(groupPos.Z())*b.chunkGroupSide()*16) + groupWidth/2 - 0.5)),
 	}
 }

@@ -26,10 +26,10 @@ func (b *BuildTask) run(ctx context.Context) error {
 		groupPos := b.chunkManager.ChunkGroupPos(progress)
 		b.publish(EventNameRunChunkGroupStart, progress)
 
-		// 移动机器人到目标区块组附近，保证后续读取和构建尽量发生在目标区块加载范围内。
-		targetPos, err := b.moveBotToChunk(ctx, groupPos)
+		// 移动机器人到目标区块组中心，保证后续读取和构建尽量发生在目标区块加载范围内。
+		targetPos, err := b.moveBotToChunkGroup(ctx, groupPos)
 		if err != nil {
-			return fmt.Errorf("BuildTask.run: move bot to chunk: %w", err)
+			return fmt.Errorf("BuildTask.run: move bot to chunk group: %w", err)
 		}
 		b.publish(EventNameRunChunkGroupMove, groupPos, targetPos)
 
