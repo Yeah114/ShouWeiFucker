@@ -8,7 +8,13 @@ import (
 type Frame interface {
 	Client() *client.Client
 	EventBus() EventBus.Bus
+	// 添加任务
+	AddTask(task Task) Frame
+	// 运行所有任务
 	Run() error
+	// 停止所有任务
+	Stop() error
+	// 停止并关闭 Client
 	Close() error
 }
 
