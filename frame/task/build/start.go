@@ -20,24 +20,32 @@ func (b *BuildTask) Start() error {
 //
 // 当前阶段只实现普通方块构建；后续清理、NBT 方块、命令方块升级、等待区块加载等流程都应接入这里。
 func (b *BuildTask) run(ctx context.Context) error {
+	b.publish(EventNameRunStart)
 	for {
 		progress, total := b.chunkManager.Progress()
 		if progress >= total {
+			b.publish(EventNameRunFinish, progress, total)
 			return nil
 		}
 
-		chunks, _, err := b.chunkManager.NextChunkGroup()
+		b.publish(EventNameRunChunkGroupStart, progress, total)
+		chunks, nbts, err := b.chunkManager.NextChunkGroup()
 		if err != nil {
 			return fmt.Errorf("BuildTask.run: next chunk group: %w", err)
 		}
 		b.updateCurrentChunk()
+		b.publish(EventNameRunChunkGroupLoaded, progress, total, chunks, nbts)
+
 		commands := b.blockBuilder.BuildCommands(chunks)
+		b.publish(EventNameRunCommandsGenerated, progress, total, len(commands))
 
 		for _, command := range commands {
 			if err := b.sendSettingsCommand(ctx, command, false); err != nil {
 				return fmt.Errorf("BuildTask.run: send build command: %w", err)
 			}
+			b.publish(EventNameRunCommandSent, progress, total, command)
 		}
+		b.publish(EventNameRunChunkGroupFinish, progress, total, len(commands))
 	}
 }
 
