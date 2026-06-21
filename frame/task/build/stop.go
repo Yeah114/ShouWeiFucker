@@ -1,6 +1,6 @@
 package build
 
-func (b *BuildTask) Close() error {
+func (b *BuildTask) Stop() error {
 	b.cancelTask()
 	return nil
 }

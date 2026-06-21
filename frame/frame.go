@@ -56,12 +56,35 @@ func (f *Frame) AddTask(task define.Task) define.Frame {
 	return f
 }
 
-// Run 按添加顺序启动所有任务。
-func (f *Frame) Run() error {
+// Start 按添加顺序启动所有任务。
+func (f *Frame) Start() error {
 	for i, task := range f.tasks {
 		f.currentTaskIndex = i
 		if err := task.Start(); err != nil {
-			return fmt.Errorf("Frame.Run: start task %q: %w", task.Name(), err)
+			return fmt.Errorf("Frame.Start: start task %q: %w", task.Name(), err)
+		}
+	}
+	return nil
+}
+
+// Pause 暂停所有任务。
+func (f *Frame) Pause() error {
+	for i := len(f.tasks) - 1; i >= 0; i-- {
+		f.currentTaskIndex = i
+		task := f.tasks[i]
+		if err := task.Pause(); err != nil {
+			return fmt.Errorf("Frame.Pause: pause task %q: %w", task.Name(), err)
+		}
+	}
+	return nil
+}
+
+// Resume 按添加顺序恢复所有任务。
+func (f *Frame) Resume() error {
+	for i, task := range f.tasks {
+		f.currentTaskIndex = i
+		if err := task.Resume(); err != nil {
+			return fmt.Errorf("Frame.Resume: resume task %q: %w", task.Name(), err)
 		}
 	}
 	return nil
@@ -72,8 +95,8 @@ func (f *Frame) Stop() error {
 	for i := len(f.tasks) - 1; i >= 0; i-- {
 		f.currentTaskIndex = i
 		task := f.tasks[i]
-		if err := task.Pause(); err != nil {
-			return fmt.Errorf("Frame.Stop: pause task %q: %w", task.Name(), err)
+		if err := task.Stop(); err != nil {
+			return fmt.Errorf("Frame.Stop: stop task %q: %w", task.Name(), err)
 		}
 	}
 	return nil
@@ -81,12 +104,8 @@ func (f *Frame) Stop() error {
 
 // Close 停止所有任务并关闭 Core 连接。
 func (f *Frame) Close() error {
-	for i := len(f.tasks) - 1; i >= 0; i-- {
-		f.currentTaskIndex = i
-		task := f.tasks[i]
-		if err := task.Close(); err != nil {
-			return fmt.Errorf("Frame.Close: close task %q: %w", task.Name(), err)
-		}
+	if err := f.Stop(); err != nil {
+		return fmt.Errorf("Frame.Close: %w", err)
 	}
 	if f.client == nil {
 		return nil
