@@ -26,11 +26,12 @@ func (b *BuildTask) run(ctx context.Context) error {
 			return nil
 		}
 
-		commands, err := b.blockBuilder.NextChunkGroupCommands()
+		_, chunks, err := b.chunkManager.NextChunkGroup()
 		if err != nil {
-			return fmt.Errorf("BuildTask.run: next chunk group commands: %w", err)
+			return fmt.Errorf("BuildTask.run: next chunk group: %w", err)
 		}
 		b.updateCurrentChunk()
+		commands := b.blockBuilder.BuildCommands(chunks)
 
 		for _, command := range commands {
 			if err := b.sendSettingsCommand(ctx, command, false); err != nil {

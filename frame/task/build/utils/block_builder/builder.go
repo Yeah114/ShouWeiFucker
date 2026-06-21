@@ -7,7 +7,6 @@ import (
 	"github.com/EmptyDea-Team/bedrock-world-operator/chunk"
 	"github.com/Yeah114/Fatalder/define"
 	"github.com/Yeah114/Fatalder/frame/task/build/utils/chunk_fill"
-	"github.com/Yeah114/Fatalder/frame/task/build/utils/chunk_manager"
 	"github.com/Yeah114/Fatalder/utils"
 )
 
@@ -19,8 +18,6 @@ type blockInfo struct {
 
 // BlockBuilderConfig 描述区块组构建命令生成器的依赖。
 type BlockBuilderConfig struct {
-	// ChunkManager 提供按区块组读取结构区块的能力。
-	ChunkManager *chunk_manager.ChunkManager
 	// RuntimeIDTable 用于将方块运行时 ID 转换为命令中的方块名和状态。
 	RuntimeIDTable *block.BlockRuntimeIDTable
 	// DisableFillBuildMode 关闭 fill 贪心合并模式，改为逐方块 setblock。
@@ -44,41 +41,24 @@ func (c BlockBuilderConfig) New() *BlockBuilder {
 	}
 }
 
-// NextChunkGroupCommands 读取下一组区块并生成对应构建命令。
-func (b *BlockBuilder) NextChunkGroupCommands() ([]string, error) {
-	groupPos, chunks, err := b.ChunkManager.NextChunkGroup()
-	if err != nil {
-		return nil, fmt.Errorf("BlockBuilder.NextChunkGroupCommands: next chunk group: %w", err)
-	}
-	return b.chunkGroupCommands(groupPos, chunks), nil
-}
-
-// ChunkGroupCommands 读取指定索引对应的区块组并生成构建命令，不推进 ChunkManager 进度。
-func (b *BlockBuilder) ChunkGroupCommands(index int) ([]string, error) {
-	groupPos, chunks, err := b.ChunkManager.ChunkGroup(index)
-	if err != nil {
-		return nil, fmt.Errorf("BlockBuilder.ChunkGroupCommands: chunk group %d: %w", index, err)
-	}
-	return b.chunkGroupCommands(groupPos, chunks), nil
-}
-
-func (b *BlockBuilder) chunkGroupCommands(groupPos define.ChunkPos, chunks map[define.ChunkPos]*chunk.Chunk) []string {
+// BuildCommands 根据外部传入的区块生成构建命令。
+func (b *BlockBuilder) BuildCommands(chunks map[define.ChunkPos]*chunk.Chunk) []string {
 	if len(chunks) == 0 {
 		return nil
 	}
 
-	startPos := b.chunkGroupStartPos(groupPos)
+	startPos := b.chunkStartPos(minChunkPos(chunks))
 	if !b.DisableFillBuildMode {
 		return collectCommands(chunk_fill.GenerateChunksCommand(b.RuntimeIDTable, chunks, startPos))
 	}
 	return b.setBlockCommands(chunks, startPos)
 }
 
-func (b *BlockBuilder) chunkGroupStartPos(groupPos define.ChunkPos) define.BlockPos {
+func (b *BlockBuilder) chunkStartPos(chunkPos define.ChunkPos) define.BlockPos {
 	return define.BlockPos{
-		b.StartPos.X() + int(groupPos.X())*b.ChunkManager.ChunkGroupSide()*16,
+		b.StartPos.X() + int(chunkPos.X())*16,
 		b.StartPos.Y(),
-		b.StartPos.Z() + int(groupPos.Z())*b.ChunkManager.ChunkGroupSide()*16,
+		b.StartPos.Z() + int(chunkPos.Z())*16,
 	}
 }
 

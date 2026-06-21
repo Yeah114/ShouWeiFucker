@@ -61,7 +61,6 @@ func (b *BuildTask) init() error {
 		ChunkGroupSide: b.chunkGroupSide(),
 	}.New()
 	b.blockBuilder = block_builder.BlockBuilderConfig{
-		ChunkManager:         b.chunkManager,
 		RuntimeIDTable:       w.World().BlockRuntimeIDTable(),
 		DisableFillBuildMode: b.DisableAutoFillBuildMode,
 		StartPos:             b.StartPos,
