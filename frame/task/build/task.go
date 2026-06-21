@@ -1,6 +1,7 @@
 package build
 
 import (
+	"context"
 	"sync"
 
 	"github.com/Yeah114/Fatalder/define"
@@ -108,6 +109,9 @@ type BuildTask struct {
 	blockBuilder *block_builder.BlockBuilder
 	limiter      ratelimit.Limiter
 	initOnce     sync.Once
+	runMu        sync.Mutex
+	runCtx       context.Context
+	runCancel    context.CancelFunc
 }
 
 func (c *BuildTaskConfig) NewTask(frame define.Frame) define.Task {
