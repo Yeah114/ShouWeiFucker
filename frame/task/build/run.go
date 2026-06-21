@@ -36,15 +36,11 @@ func (b *BuildTask) run(ctx context.Context) error {
 		}
 		b.publish(EventNameRunChunkGroupMove, progress, groupPos, targetPos)
 
-		if b.shouldWaitChunkLoad() {
-			b.publish(EventNameRunChunkGroupWaitLoadStart, groupPos)
-			if err := b.waitChunkLoad(ctx, groupPos); err != nil {
-				if b.taskCanceled(ctx, err) {
-					return nil
-				}
-				return fmt.Errorf("BuildTask.run: wait chunk load: %w", err)
+		if err := b.waitChunkLoad(ctx, groupPos); err != nil {
+			if b.taskCanceled(ctx, err) {
+				return nil
 			}
-			b.publish(EventNameRunChunkGroupWaitLoadFinish, groupPos)
+			return fmt.Errorf("BuildTask.run: wait chunk load: %w", err)
 		}
 
 		b.publish(EventNameRunChunkGroupStart, progress)

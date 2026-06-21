@@ -41,9 +41,14 @@ func (b *BuildTask) chunkLoadBounds(groupPos define.ChunkPos) (startX, y, startZ
 //
 // 未加载区块通常会返回 commands.fill.outOfWorld；一旦返回其他结果，说明这片区域已经可以访问。
 func (b *BuildTask) waitChunkLoad(ctx context.Context, groupPos define.ChunkPos) error {
+	if !b.shouldWaitChunkLoad() {
+		return nil
+	}
+
 	startX, y, startZ, endX, endZ := b.chunkLoadBounds(groupPos)
 	command := fmt.Sprintf("fill %d %d %d %d %d %d air keep", startX, y, startZ, endX, y, endZ)
 
+	b.publish(EventNameRunChunkGroupWaitLoadStart, groupPos)
 	for attempt := 1; ; attempt++ {
 		if err := b.checkTaskContext(ctx); err != nil {
 			return fmt.Errorf("BuildTask.waitChunkLoad: %w", err)
@@ -67,6 +72,7 @@ func (b *BuildTask) waitChunkLoad(ctx context.Context, groupPos define.ChunkPos)
 		}
 		b.publish(EventNameRunChunkGroupWaitLoadProbe, groupPos, attempt, ready, timeout, message)
 		if ready {
+			b.publish(EventNameRunChunkGroupWaitLoadFinish, groupPos)
 			return nil
 		}
 
