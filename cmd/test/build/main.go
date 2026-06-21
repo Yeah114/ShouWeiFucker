@@ -7,7 +7,7 @@ import (
 
 	client "github.com/EmptyDea-Team/EmptyDea-core-client"
 	"github.com/Yeah114/Fatalder/define"
-	fatalder_frame "github.com/Yeah114/Fatalder/frame"
+	"github.com/Yeah114/Fatalder/frame"
 	"github.com/Yeah114/Fatalder/frame/task/build"
 )
 
@@ -43,7 +43,7 @@ func run() error {
 	}
 	defer conn.Close()
 
-	frame := fatalder_frame.New(coreClient)
+	frame := frame.New(coreClient)
 	task := build.BuildTaskConfig{
 		BuildTaskWorldConfig: build.BuildTaskWorldConfig{
 			WorldPath:      sourceWorldPath,
