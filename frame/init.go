@@ -20,13 +20,13 @@ func (f *Frame) initClient() error {
 		return fmt.Errorf("Frame.initClient: nil client")
 	}
 
-	pipeName := "fatalder-" + uuid.NewString()
-	listener, err := core_server.Listen("pipe", pipeName, nil)
+	address := "fatalder-" + uuid.NewString()
+	listener, err := core_server.Listen("shmipc", address, nil)
 	if err != nil {
 		return fmt.Errorf("Frame.initClient: listen embedded core: %w", err)
 	}
 
-	coreClient, err := client.DialContext(context.Background(), "pipe", pipeName)
+	coreClient, err := client.DialContext(context.Background(), "shmipc", address)
 	if err != nil {
 		_ = listener.Close()
 		return fmt.Errorf("Frame.initClient: dial embedded core: %w", err)
