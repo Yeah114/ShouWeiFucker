@@ -26,6 +26,13 @@ func (b *BuildTask) run(ctx context.Context) error {
 	for ; progress < total; progress++ {
 		b.publish(EventNameRunChunkGroupStart, progress)
 
+		groupPos := b.chunkManager.ChunkGroupPos(progress)
+		targetPos := b.chunkGroupTargetPos(groupPos)
+		if err := b.moveBotToChunkGroup(ctx, targetPos); err != nil {
+			return fmt.Errorf("BuildTask.run: move bot to chunk group: %w", err)
+		}
+		b.publish(EventNameRunChunkGroupMove, progress, groupPos, targetPos)
+
 		// 由 ChunkManager 统一推进区块组进度，并返回当前组的方块数据和 NBT 数据。
 		chunks, nbts, err := b.chunkManager.NextChunkGroup()
 		if err != nil {

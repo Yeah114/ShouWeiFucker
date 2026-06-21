@@ -17,6 +17,9 @@ const (
 	// EventNameRunChunkGroupStart 区块组开始处理事件。
 	// 参数：progress int。
 	EventNameRunChunkGroupStart = Name + ".Run.ChunkGroup.Start"
+	// EventNameRunChunkGroupMove 区块组机器人移动完成事件。
+	// 参数：progress int, groupPos define.ChunkPos, targetPos define.BlockPos。
+	EventNameRunChunkGroupMove = Name + ".Run.ChunkGroup.Move"
 	// EventNameRunChunkGroupLoaded 区块组数据读取完成事件。
 	// 参数：progress int, chunks map[define.ChunkPos]*chunk.Chunk, nbts map[define.ChunkPos][]map[string]any。
 	EventNameRunChunkGroupLoaded = Name + ".Run.ChunkGroup.Loaded"

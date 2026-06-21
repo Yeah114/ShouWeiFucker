@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	packet_pb "github.com/EmptyDea-Team/EmptyDea-core-api/pb/minecraft/protocol/packet"
+	"github.com/Yeah114/Fatalder/define"
 )
 
 // takeCommandLimit 在发送命令前应用任务限速器。
@@ -59,4 +60,21 @@ func (b *BuildTask) sendChat(ctx context.Context, content string) error {
 		return fmt.Errorf("BuildTask.sendChat: %w", err)
 	}
 	return nil
+}
+
+// moveBotToChunkGroup 将机器人移动到目标世界中当前区块组的起点附近。
+func (b *BuildTask) moveBotToChunkGroup(ctx context.Context, pos define.BlockPos) error {
+	if err := b.sendPlayerCommand(ctx, fmt.Sprintf("tp @s %d %d %d", pos.X(), pos.Y(), pos.Z())); err != nil {
+		return fmt.Errorf("BuildTask.moveBotToChunkGroup: %w", err)
+	}
+	return nil
+}
+
+// chunkGroupTargetPos 将区块组坐标转换成目标世界中的方块坐标。
+func (b *BuildTask) chunkGroupTargetPos(groupPos define.ChunkPos) define.BlockPos {
+	return define.BlockPos{
+		b.StartPos.X() + int(groupPos.X())*b.chunkGroupSide()*16,
+		b.StartPos.Y(),
+		b.StartPos.Z() + int(groupPos.Z())*b.chunkGroupSide()*16,
+	}
 }

@@ -74,3 +74,8 @@ func (c *ChunkManager) Dimension() define.Dimension {
 func (c *ChunkManager) ChunkGroupSide() int {
 	return c.chunkGroupSide
 }
+
+// ChunkGroupPos 返回指定进度索引对应的区块组坐标。
+func (c *ChunkManager) ChunkGroupPos(index int) define.ChunkPos {
+	return c.chunkPosGenerator.Index(index)
+}
