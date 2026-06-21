@@ -20,6 +20,15 @@ const (
 	// EventNameRunChunkGroupMove 区块组机器人移动完成事件。
 	// 参数：progress int, groupPos define.ChunkPos, targetPos define.BlockPos。
 	EventNameRunChunkGroupMove = Name + ".Run.ChunkGroup.Move"
+	// EventNameRunChunkGroupWaitLoadStart 区块组等待加载开始事件。
+	// 参数：progress int, groupPos define.ChunkPos。
+	EventNameRunChunkGroupWaitLoadStart = Name + ".Run.ChunkGroup.WaitLoad.Start"
+	// EventNameRunChunkGroupWaitLoadProbe 区块组加载探测事件。
+	// 参数：progress int, groupPos define.ChunkPos, attempt int, ready bool, timeout bool, message string。
+	EventNameRunChunkGroupWaitLoadProbe = Name + ".Run.ChunkGroup.WaitLoad.Probe"
+	// EventNameRunChunkGroupWaitLoadFinish 区块组等待加载完成事件。
+	// 参数：progress int, groupPos define.ChunkPos。
+	EventNameRunChunkGroupWaitLoadFinish = Name + ".Run.ChunkGroup.WaitLoad.Finish"
 	// EventNameRunChunkGroupLoaded 区块组数据读取完成事件。
 	// 参数：progress int, chunks map[define.ChunkPos]*chunk.Chunk, nbts map[define.ChunkPos][]map[string]any。
 	EventNameRunChunkGroupLoaded = Name + ".Run.ChunkGroup.Loaded"

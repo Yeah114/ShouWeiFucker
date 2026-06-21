@@ -36,6 +36,17 @@ func (b *BuildTask) run(ctx context.Context) error {
 		}
 		b.publish(EventNameRunChunkGroupMove, progress, groupPos, targetPos)
 
+		if b.shouldWaitChunkLoad() {
+			b.publish(EventNameRunChunkGroupWaitLoadStart, progress, groupPos)
+			if err := b.waitChunkLoad(ctx, progress, groupPos); err != nil {
+				if b.taskCanceled(ctx, err) {
+					return nil
+				}
+				return fmt.Errorf("BuildTask.run: wait chunk load: %w", err)
+			}
+			b.publish(EventNameRunChunkGroupWaitLoadFinish, progress, groupPos)
+		}
+
 		b.publish(EventNameRunChunkGroupStart, progress)
 
 		// ChunkManager.NextChunkGroup 会推进内部区块组游标，并返回当前组坐标、方块数据和 NBT 数据。
