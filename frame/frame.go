@@ -12,8 +12,7 @@ import (
 // Frame 是 Fatalder 的运行框架实现，负责持有 Core 客户端、事件总线和任务列表。
 type Frame struct {
 	client           *client.Client
-	closeClient      bool
-	listener         coreListener
+	closer           func() error
 	eventBus         EventBus.Bus
 	tasks            []define.Task
 	currentTaskIndex int
@@ -60,9 +59,6 @@ func (f *Frame) CurrentTaskIndex() int {
 func (f *Frame) Connect(ctx context.Context) error {
 	if err := f.initClient(); err != nil {
 		return fmt.Errorf("Frame.Connect: init client: %w", err)
-	}
-	if f.client == nil {
-		return fmt.Errorf("Frame.Connect: nil client")
 	}
 	state, err := f.client.Frame().GetConnectionState(ctx)
 	if err != nil {
@@ -158,18 +154,13 @@ func (f *Frame) Close() error {
 			return fmt.Errorf("Frame.Close: stop core connection: %w", err)
 		}
 	}
-	if f.closeClient && f.client != nil {
-		if err := f.client.Close(); err != nil {
-			return fmt.Errorf("Frame.Close: close client: %w", err)
+	if f.closer != nil {
+		if err := f.closer(); err != nil {
+			return fmt.Errorf("Frame.Close: close core client: %w", err)
 		}
+		f.closer = nil
 	}
 	f.client = nil
-	if f.listener != nil {
-		if err := f.listener.Close(); err != nil {
-			return fmt.Errorf("Frame.Close: close listener: %w", err)
-		}
-		f.listener = nil
-	}
 	return nil
 }
 

@@ -4,16 +4,13 @@ package frame
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	client "github.com/EmptyDea-Team/EmptyDea-core-client"
 	core_server "github.com/EmptyDea-Team/EmptyDea-core/frame/EmptyDeaCore/server"
 	"github.com/google/uuid"
 )
-
-type coreListener interface {
-	Close() error
-}
 
 func (f *Frame) initClient() error {
 	if f.client != nil {
@@ -33,7 +30,8 @@ func (f *Frame) initClient() error {
 	}
 
 	f.client = coreClient
-	f.listener = listener
-	f.closeClient = true
+	f.closer = func() error {
+		return errors.Join(coreClient.Close(), listener.Close())
+	}
 	return nil
 }

@@ -4,10 +4,6 @@ package frame
 
 import "fmt"
 
-type coreListener interface {
-	Close() error
-}
-
 func (f *Frame) initClient() error {
 	if f.client == nil {
 		return fmt.Errorf("Frame.initClient: nil client")
