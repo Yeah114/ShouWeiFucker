@@ -3,7 +3,6 @@ package frame
 import (
 	"context"
 	"fmt"
-	"sync"
 
 	client "github.com/EmptyDea-Team/EmptyDea-core-client"
 	"github.com/Yeah114/Fatalder/define"
@@ -15,7 +14,6 @@ type Frame struct {
 	client   *client.Client
 	eventBus EventBus.Bus
 	tasks    []define.Task
-	mu       sync.Mutex
 }
 
 // New 创建一个默认事件总线的 Frame。
@@ -43,17 +41,13 @@ func (f *Frame) EventBus() EventBus.Bus {
 
 // AddTask 添加任务到框架并返回自身，便于链式调用。
 func (f *Frame) AddTask(task define.Task) define.Frame {
-	f.mu.Lock()
-	defer f.mu.Unlock()
-
 	f.tasks = append(f.tasks, task)
 	return f
 }
 
 // Run 按添加顺序启动所有任务。
 func (f *Frame) Run() error {
-	tasks := f.snapshotTasks()
-	for _, task := range tasks {
+	for _, task := range f.tasks {
 		if err := task.Start(); err != nil {
 			return fmt.Errorf("Frame.Run: start task %q: %w", task.Name(), err)
 		}
@@ -63,9 +57,8 @@ func (f *Frame) Run() error {
 
 // Stop 停止所有任务。
 func (f *Frame) Stop() error {
-	tasks := f.snapshotTasks()
-	for i := len(tasks) - 1; i >= 0; i-- {
-		task := tasks[i]
+	for i := len(f.tasks) - 1; i >= 0; i-- {
+		task := f.tasks[i]
 		if err := task.Pause(); err != nil {
 			return fmt.Errorf("Frame.Stop: pause task %q: %w", task.Name(), err)
 		}
@@ -75,9 +68,8 @@ func (f *Frame) Stop() error {
 
 // Close 停止所有任务并关闭 Core 连接。
 func (f *Frame) Close() error {
-	tasks := f.snapshotTasks()
-	for i := len(tasks) - 1; i >= 0; i-- {
-		task := tasks[i]
+	for i := len(f.tasks) - 1; i >= 0; i-- {
+		task := f.tasks[i]
 		if err := task.Close(); err != nil {
 			return fmt.Errorf("Frame.Close: close task %q: %w", task.Name(), err)
 		}
@@ -89,15 +81,6 @@ func (f *Frame) Close() error {
 		return fmt.Errorf("Frame.Close: stop core connection: %w", err)
 	}
 	return nil
-}
-
-func (f *Frame) snapshotTasks() []define.Task {
-	f.mu.Lock()
-	defer f.mu.Unlock()
-
-	tasks := make([]define.Task, len(f.tasks))
-	copy(tasks, f.tasks)
-	return tasks
 }
 
 var _ define.Frame = (*Frame)(nil)
