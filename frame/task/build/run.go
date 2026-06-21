@@ -25,15 +25,8 @@ func (b *BuildTask) run(ctx context.Context) error {
 			return fmt.Errorf("BuildTask.run: %w", err)
 		}
 
-		b.publish(EventNameRunChunkGroupStart, progress)
-
-		// ChunkManager.NextChunkGroup 会推进内部区块组游标，并返回当前组坐标、方块数据和 NBT 数据。
-		// 真正可持久化的断点仍然只依赖 CurrentChunk；暂停后 Resume 会重新 Init 并按 CurrentChunk 重建游标。
-		groupPos, chunks, nbts, err := b.chunkManager.NextChunkGroup()
-		if err != nil {
-			return fmt.Errorf("BuildTask.run: next chunk group: %w", err)
-		}
-		// 机器人先移动到当前区块组附近，再发送构建命令，保证目标区块尽量处于加载范围内。
+		// 先按当前进度算出区块组坐标并移动机器人，保证后续读取和构建尽量发生在目标区块加载范围内。
+		groupPos := b.chunkManager.ChunkGroupPos(progress)
 		targetPos, err := b.moveBotToChunk(ctx, groupPos)
 		if err != nil {
 			if b.taskCanceled(ctx, err) {
@@ -43,6 +36,14 @@ func (b *BuildTask) run(ctx context.Context) error {
 		}
 		b.publish(EventNameRunChunkGroupMove, progress, groupPos, targetPos)
 
+		b.publish(EventNameRunChunkGroupStart, progress)
+
+		// ChunkManager.NextChunkGroup 会推进内部区块组游标，并返回当前组坐标、方块数据和 NBT 数据。
+		// 真正可持久化的断点仍然只依赖 CurrentChunk；暂停后 Resume 会重新 Init 并按 CurrentChunk 重建游标。
+		_, chunks, nbts, err := b.chunkManager.NextChunkGroup()
+		if err != nil {
+			return fmt.Errorf("BuildTask.run: next chunk group: %w", err)
+		}
 		b.publish(EventNameRunChunkGroupLoaded, progress, chunks, nbts)
 
 		// 当前阶段只生成普通方块命令；后续 NBT 方块和命令方块流程应在这里之后接入。
