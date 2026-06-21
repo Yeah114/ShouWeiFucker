@@ -26,7 +26,7 @@ func (b *BuildTask) run(ctx context.Context) error {
 			return nil
 		}
 
-		_, chunks, err := b.chunkManager.NextChunkGroup()
+		chunks, _, err := b.chunkManager.NextChunkGroup()
 		if err != nil {
 			return fmt.Errorf("BuildTask.run: next chunk group: %w", err)
 		}

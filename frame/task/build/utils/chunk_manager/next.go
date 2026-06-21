@@ -9,9 +9,9 @@ import (
 )
 
 // ChunkGroup 读取指定索引对应的一组区块，不推进内部进度。
-func (c *ChunkManager) ChunkGroup(index int) (define.ChunkPos, map[define.ChunkPos]*chunk.Chunk, error) {
+func (c *ChunkManager) ChunkGroup(index int) (map[define.ChunkPos]*chunk.Chunk, map[define.ChunkPos][]map[string]any, error) {
 	if c.world == nil || index < 0 || index >= c.max {
-		return define.ChunkPos{}, nil, nil
+		return nil, nil, nil
 	}
 
 	groupPos := c.chunkPosGenerator.Index(index)
@@ -33,30 +33,39 @@ func (c *ChunkManager) ChunkGroup(index int) (define.ChunkPos, map[define.ChunkP
 	}
 
 	if len(allChunkPositions) == 0 {
-		return groupPos, nil, nil
+		return nil, nil, nil
 	}
 
 	chunks := make(map[define.ChunkPos]*chunk.Chunk, len(allChunkPositions))
+	nbts := make(map[define.ChunkPos][]map[string]any, len(allChunkPositions))
 	for _, chunkPos := range allChunkPositions {
-		c, exists, err := c.world.LoadChunk(c.dimension, chunkPos)
+		loadedChunk, exists, err := c.world.LoadChunk(c.dimension, chunkPos)
 		if err != nil {
-			return define.ChunkPos{}, nil, fmt.Errorf("ChunkManager.ChunkGroup: load chunk %v: %w", chunkPos, err)
+			return nil, nil, fmt.Errorf("ChunkManager.ChunkGroup: load chunk %v: %w", chunkPos, err)
 		}
 		if exists {
-			chunks[chunkPos] = c
+			chunks[chunkPos] = loadedChunk
+		}
+
+		chunkNBT, err := c.world.LoadNBT(c.dimension, chunkPos)
+		if err != nil {
+			return nil, nil, fmt.Errorf("ChunkManager.ChunkGroup: load nbt %v: %w", chunkPos, err)
+		}
+		if len(chunkNBT) > 0 {
+			nbts[chunkPos] = chunkNBT
 		}
 	}
-	return groupPos, chunks, nil
+	return chunks, nbts, nil
 }
 
-// NextChunkGroup 获取下一组区块，并返回这组区块所属的组坐标。
-func (c *ChunkManager) NextChunkGroup() (define.ChunkPos, map[define.ChunkPos]*chunk.Chunk, error) {
-	groupPos, chunks, err := c.ChunkGroup(c.progress)
+// NextChunkGroup 获取下一组区块和对应的 NBT 数据。
+func (c *ChunkManager) NextChunkGroup() (map[define.ChunkPos]*chunk.Chunk, map[define.ChunkPos][]map[string]any, error) {
+	chunks, nbts, err := c.ChunkGroup(c.progress)
 	if err != nil {
-		return define.ChunkPos{}, nil, fmt.Errorf("ChunkManager.NextChunkGroup: %w", err)
+		return nil, nil, fmt.Errorf("ChunkManager.NextChunkGroup: %w", err)
 	}
 	if c.world != nil && c.progress < c.max {
 		c.progress++
 	}
-	return groupPos, chunks, nil
+	return chunks, nbts, nil
 }
