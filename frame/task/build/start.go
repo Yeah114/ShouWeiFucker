@@ -5,21 +5,21 @@ import (
 	"fmt"
 )
 
-// Start 初始化任务并从当前断点开始构建所有普通方块。
+// Start 初始化任务并从当前断点开始执行构建任务。
 func (b *BuildTask) Start() error {
 	if err := b.Init(); err != nil {
 		return fmt.Errorf("BuildTask.Start: %w", err)
 	}
-	if err := b.buildAllBlocks(context.Background()); err != nil {
+	if err := b.run(context.Background()); err != nil {
 		return fmt.Errorf("BuildTask.Start: %w", err)
 	}
 	return nil
 }
 
-// buildAllBlocks 按区块组生成并发送构建命令。
+// run 执行构建任务主流程。
 //
-// 当前实现只处理方块构建，不处理清理、NBT 方块、命令方块升级、等待区块加载等高级流程。
-func (b *BuildTask) buildAllBlocks(ctx context.Context) error {
+// 当前阶段只实现普通方块构建；后续清理、NBT 方块、命令方块升级、等待区块加载等流程都应接入这里。
+func (b *BuildTask) run(ctx context.Context) error {
 	for {
 		progress, total := b.chunkManager.Progress()
 		if progress >= total {
@@ -28,13 +28,13 @@ func (b *BuildTask) buildAllBlocks(ctx context.Context) error {
 
 		commands, err := b.blockBuilder.NextChunkGroupCommands()
 		if err != nil {
-			return fmt.Errorf("BuildTask.buildAllBlocks: next chunk group commands: %w", err)
+			return fmt.Errorf("BuildTask.run: next chunk group commands: %w", err)
 		}
 		b.updateCurrentChunk()
 
 		for _, command := range commands {
 			if err := b.sendSettingsCommand(ctx, command, false); err != nil {
-				return fmt.Errorf("BuildTask.buildAllBlocks: send build command: %w", err)
+				return fmt.Errorf("BuildTask.run: send build command: %w", err)
 			}
 		}
 	}
