@@ -44,7 +44,7 @@ func run() error {
 	defer conn.Close()
 
 	frame := fatalder_frame.New(coreClient)
-	task := (&build.BuildTaskConfig{
+	task := build.BuildTaskConfig{
 		BuildTaskWorldConfig: build.BuildTaskWorldConfig{
 			WorldPath:      sourceWorldPath,
 			WorldStartPos:  sourceStartPos,
@@ -57,7 +57,7 @@ func run() error {
 		StartPos:  targetStartPos,
 		Dimension: targetDimension,
 		Speed:     intPtr(speed),
-	}).NewTask(frame)
+	}.NewTask(frame)
 
 	frame.AddTask(task)
 	if err := frame.Start(); err != nil {

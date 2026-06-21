@@ -113,9 +113,9 @@ type BuildTask struct {
 	taskCancel   context.CancelFunc
 }
 
-func (c *BuildTaskConfig) NewTask(frame define.Frame) define.Task {
+func (c BuildTaskConfig) NewTask(frame define.Frame) define.Task {
 	task := new(BuildTask)
-	task.BuildTaskConfig = *c
+	task.BuildTaskConfig = c
 	task.frame = frame
 	return task
 }
