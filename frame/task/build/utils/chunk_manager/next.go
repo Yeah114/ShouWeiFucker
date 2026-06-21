@@ -58,19 +58,18 @@ func (c *ChunkManager) ChunkGroup(index int) (map[define.ChunkPos]*chunk.Chunk, 
 	return chunks, nbts, nil
 }
 
-// NextChunkGroup 获取下一组区块坐标、区块数据和对应的 NBT 数据。
-func (c *ChunkManager) NextChunkGroup() (define.ChunkPos, map[define.ChunkPos]*chunk.Chunk, map[define.ChunkPos][]map[string]any, error) {
+// NextChunkGroup 获取下一组区块数据和对应的 NBT 数据。
+func (c *ChunkManager) NextChunkGroup() (map[define.ChunkPos]*chunk.Chunk, map[define.ChunkPos][]map[string]any, error) {
 	if c.world == nil || c.progress < 0 || c.progress >= c.max {
-		return define.ChunkPos{}, nil, nil, nil
+		return nil, nil, nil
 	}
 
-	groupPos := c.ChunkGroupPos(c.progress)
 	chunks, nbts, err := c.ChunkGroup(c.progress)
 	if err != nil {
-		return define.ChunkPos{}, nil, nil, fmt.Errorf("ChunkManager.NextChunkGroup: %w", err)
+		return nil, nil, fmt.Errorf("ChunkManager.NextChunkGroup: %w", err)
 	}
 	if c.world != nil && c.progress < c.max {
 		c.progress++
 	}
-	return groupPos, chunks, nbts, nil
+	return chunks, nbts, nil
 }

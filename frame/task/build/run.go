@@ -37,9 +37,9 @@ func (b *BuildTask) run(ctx context.Context) error {
 			return fmt.Errorf("BuildTask.run: wait chunk load: %w", err)
 		}
 
-		// ChunkManager.NextChunkGroup 会推进内部区块组游标，并返回当前组坐标、方块数据和 NBT 数据。
+		// ChunkManager.NextChunkGroup 会推进内部区块组游标，并返回方块数据和 NBT 数据。
 		// 真正可持久化的断点仍然只依赖 CurrentChunk；暂停后 Resume 会重新 Init 并按 CurrentChunk 重建游标。
-		_, chunks, nbts, err := b.chunkManager.NextChunkGroup()
+		chunks, nbts, err := b.chunkManager.NextChunkGroup()
 		if err != nil {
 			return fmt.Errorf("BuildTask.run: next chunk group: %w", err)
 		}
