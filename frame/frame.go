@@ -51,17 +51,17 @@ func (f *Frame) CurrentTaskIndex() int {
 	return f.currentTaskIndex
 }
 
-// Connect 通过 Ping 检查 Core 客户端是否可用。
+// Connect 通过连接状态检查 Core 客户端是否已经连接。
 func (f *Frame) Connect(ctx context.Context) error {
 	if f.client == nil {
 		return fmt.Errorf("Frame.Connect: nil client")
 	}
-	ok, err := f.client.Frame().Ping(ctx)
+	state, err := f.client.Frame().GetConnectionState(ctx)
 	if err != nil {
-		return fmt.Errorf("Frame.Connect: ping core: %w", err)
+		return fmt.Errorf("Frame.Connect: get connection state: %w", err)
 	}
-	if !ok {
-		return fmt.Errorf("Frame.Connect: ping core failed")
+	if !state.Connected {
+		return fmt.Errorf("Frame.Connect: core disconnected: %s", state.CloseReason)
 	}
 	return nil
 }
