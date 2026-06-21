@@ -44,7 +44,6 @@ func (b *BuildTask) run(ctx context.Context) error {
 		}
 		targetPos, err := b.moveBotToChunk(ctx, groupPos)
 		if err != nil {
-			b.rollbackCurrentChunkGroup(progress)
 			if ctx.Err() != nil {
 				return nil
 			}
@@ -61,14 +60,12 @@ func (b *BuildTask) run(ctx context.Context) error {
 		// 命令发送统一走封装方法，保证限速器对所有构建命令生效。
 		for _, command := range commands {
 			if err := ctx.Err(); err != nil {
-				b.rollbackCurrentChunkGroup(progress)
 				if errors.Is(err, context.Canceled) {
 					return nil
 				}
 				return fmt.Errorf("BuildTask.run: %w", err)
 			}
 			if err := b.sendSettingsCommand(ctx, command, false); err != nil {
-				b.rollbackCurrentChunkGroup(progress)
 				if ctx.Err() != nil {
 					return nil
 				}
@@ -117,11 +114,6 @@ func (b *BuildTask) cancelRun() {
 	if b.runCancel != nil {
 		b.runCancel()
 	}
-}
-
-// rollbackCurrentChunkGroup 将内部进度回退到当前区块组，避免恢复时跳过未完成的区块组。
-func (b *BuildTask) rollbackCurrentChunkGroup(progress int) {
-	b.chunkManager.SetProgress(progress)
 }
 
 // updateCurrentChunk 将当前区块组进度换算回区块断点，便于任务恢复。
