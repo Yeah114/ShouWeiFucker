@@ -10,6 +10,7 @@ import (
 	bwo_world "github.com/EmptyDea-Team/bedrock-world-operator/world"
 	"github.com/Yeah114/Fatalder/define"
 	build_utils "github.com/Yeah114/Fatalder/frame/task/build/utils"
+	"github.com/Yeah114/Fatalder/frame/task/build/utils/block_builder"
 	"github.com/Yeah114/Fatalder/frame/task/build/utils/building_world"
 	"github.com/Yeah114/Fatalder/frame/task/build/utils/chunk_manager"
 	"go.uber.org/ratelimit"
@@ -58,6 +59,12 @@ func (b *BuildTask) init() error {
 		Dimension:      b.WorldDimension,
 		Progress:       b.startGroupIndex(w.Size()),
 		ChunkGroupSide: b.chunkGroupSide(),
+	}.New()
+	b.blockBuilder = block_builder.BlockBuilderConfig{
+		ChunkManager:         b.chunkManager,
+		RuntimeIDTable:       w.World().BlockRuntimeIDTable(),
+		DisableFillBuildMode: b.DisableAutoFillBuildMode,
+		StartPos:             b.StartPos,
 	}.New()
 	b.publish(EventNameInitFinish)
 	return nil

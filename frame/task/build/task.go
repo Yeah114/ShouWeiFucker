@@ -4,6 +4,7 @@ import (
 	"sync"
 
 	"github.com/Yeah114/Fatalder/define"
+	"github.com/Yeah114/Fatalder/frame/task/build/utils/block_builder"
 	"github.com/Yeah114/Fatalder/frame/task/build/utils/building_world"
 	"github.com/Yeah114/Fatalder/frame/task/build/utils/chunk_manager"
 	"go.uber.org/ratelimit"
@@ -104,6 +105,7 @@ type BuildTask struct {
 	frame        define.Frame
 	world        *building_world.BuildingWorld
 	chunkManager *chunk_manager.ChunkManager
+	blockBuilder *block_builder.BlockBuilder
 	limiter      ratelimit.Limiter
 	initOnce     sync.Once
 }
