@@ -26,6 +26,9 @@ const (
 	// EventNameRunChunkGroupWaitLoadProbe 区块组加载探测事件。
 	// 参数：groupPos define.ChunkPos, attempt int, ready bool, timeout bool, message string。
 	EventNameRunChunkGroupWaitLoadProbe = Name + ".Run.ChunkGroup.WaitLoad.Probe"
+	// EventNameRunChunkGroupWaitLoadRetry 区块组加载探测失败后准备重试事件。
+	// 参数：groupPos define.ChunkPos, attempt int, timeout bool, message string。
+	EventNameRunChunkGroupWaitLoadRetry = Name + ".Run.ChunkGroup.WaitLoad.Retry"
 	// EventNameRunChunkGroupWaitLoadFinish 区块组等待加载完成事件。
 	// 参数：groupPos define.ChunkPos。
 	EventNameRunChunkGroupWaitLoadFinish = Name + ".Run.ChunkGroup.WaitLoad.Finish"

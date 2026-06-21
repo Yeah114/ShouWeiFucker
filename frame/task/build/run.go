@@ -25,8 +25,11 @@ func (b *BuildTask) run(ctx context.Context) error {
 			return fmt.Errorf("BuildTask.run: %w", err)
 		}
 
-		// 先按当前进度算出区块组坐标并移动机器人，保证后续读取和构建尽量发生在目标区块加载范围内。
+		// 先按当前进度算出区块组坐标并标记区块组开始，后续移动、等待加载和读取都属于这一组。
 		groupPos := b.chunkManager.ChunkGroupPos(progress)
+		b.publish(EventNameRunChunkGroupStart, progress)
+
+		// 移动机器人到目标区块组附近，保证后续读取和构建尽量发生在目标区块加载范围内。
 		targetPos, err := b.moveBotToChunk(ctx, groupPos)
 		if err != nil {
 			if b.taskCanceled(ctx, err) {
@@ -42,8 +45,6 @@ func (b *BuildTask) run(ctx context.Context) error {
 			}
 			return fmt.Errorf("BuildTask.run: wait chunk load: %w", err)
 		}
-
-		b.publish(EventNameRunChunkGroupStart, progress)
 
 		// ChunkManager.NextChunkGroup 会推进内部区块组游标，并返回当前组坐标、方块数据和 NBT 数据。
 		// 真正可持久化的断点仍然只依赖 CurrentChunk；暂停后 Resume 会重新 Init 并按 CurrentChunk 重建游标。

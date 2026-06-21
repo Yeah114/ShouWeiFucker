@@ -75,6 +75,7 @@ func (b *BuildTask) waitChunkLoad(ctx context.Context, groupPos define.ChunkPos)
 			b.publish(EventNameRunChunkGroupWaitLoadFinish, groupPos)
 			return nil
 		}
+		b.publish(EventNameRunChunkGroupWaitLoadRetry, groupPos, attempt, timeout, message)
 
 		timer := time.NewTimer(chunkLoadProbeDelay)
 		select {
