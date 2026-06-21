@@ -12,25 +12,25 @@ const (
 	EventNameInitFinish = Name + ".Init.Finish"
 
 	// EventNameRunStart 构建主流程开始事件。
-	// 参数：size define.Size。
+	// 参数：size define.Size, total int。
 	EventNameRunStart = Name + ".Run.Start"
 	// EventNameRunChunkGroupStart 区块组开始处理事件。
-	// 参数：progress int, total int。
+	// 参数：progress int。
 	EventNameRunChunkGroupStart = Name + ".Run.ChunkGroup.Start"
 	// EventNameRunChunkGroupLoaded 区块组数据读取完成事件。
-	// 参数：progress int, total int, chunks map[define.ChunkPos]*chunk.Chunk, nbts map[define.ChunkPos][]map[string]any。
+	// 参数：progress int, chunks map[define.ChunkPos]*chunk.Chunk, nbts map[define.ChunkPos][]map[string]any。
 	EventNameRunChunkGroupLoaded = Name + ".Run.ChunkGroup.Loaded"
 	// EventNameRunCommandsGenerated 区块组构建命令生成完成事件。
-	// 参数：progress int, total int, commandCount int。
+	// 参数：progress int, commandCount int。
 	EventNameRunCommandsGenerated = Name + ".Run.Commands.Generated"
 	// EventNameRunCommandSent 单条构建命令发送完成事件。
-	// 参数：progress int, total int, command string。
+	// 参数：progress int, command string。
 	EventNameRunCommandSent = Name + ".Run.Command.Sent"
 	// EventNameRunChunkGroupFinish 区块组处理完成事件。
-	// 参数：progress int, total int, commandCount int。
+	// 参数：progress int, commandCount int。
 	EventNameRunChunkGroupFinish = Name + ".Run.ChunkGroup.Finish"
 	// EventNameRunFinish 构建主流程完成事件。
-	// 参数：progress int, total int。
+	// 参数：progress int。
 	EventNameRunFinish = Name + ".Run.Finish"
 )
 
