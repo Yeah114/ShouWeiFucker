@@ -44,6 +44,10 @@ func run() error {
 	defer client.Close()
 
 	frame := frame.FrameConfig{}.New(client)
+	if err := frame.Connect(ctx); err != nil {
+		return fmt.Errorf("connect frame: %w", err)
+	}
+
 	task := build.BuildTaskConfig{
 		BuildTaskWorldConfig: build.BuildTaskWorldConfig{
 			WorldPath:      sourceWorldPath,
