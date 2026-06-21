@@ -3,12 +3,12 @@ package define
 import (
 	"context"
 
-	"github.com/EmptyDea-Team/EmptyDea-core-client"
+	frame_api "github.com/EmptyDea-Team/EmptyDea-core-api/frame"
 	"github.com/asaskevich/EventBus"
 )
 
 type Frame interface {
-	Client() *client.Client
+	Client() frame_api.Client
 	EventBus() EventBus.Bus
 	// 所有任务
 	Tasks() []Task

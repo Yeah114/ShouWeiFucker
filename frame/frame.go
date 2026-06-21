@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	frame_api "github.com/EmptyDea-Team/EmptyDea-core-api/frame"
 	client "github.com/EmptyDea-Team/EmptyDea-core-client"
 	"github.com/Yeah114/Fatalder/define"
 	"github.com/asaskevich/EventBus"
@@ -11,7 +12,7 @@ import (
 
 // Frame 是 Fatalder 的运行框架实现，负责持有 Core 客户端、事件总线和任务列表。
 type Frame struct {
-	client           *client.Client
+	client           frame_api.Client
 	closer           func() error
 	eventBus         EventBus.Bus
 	tasks            []define.Task
@@ -29,7 +30,7 @@ type FrameConfig struct {
 }
 
 // New 创建一个默认事件总线的 Frame。
-func (c FrameConfig) New(coreClient *client.Client) *Frame {
+func (c FrameConfig) New(coreClient frame_api.Client) *Frame {
 	return &Frame{
 		client:   coreClient,
 		eventBus: EventBus.New(),
@@ -38,7 +39,7 @@ func (c FrameConfig) New(coreClient *client.Client) *Frame {
 }
 
 // Client 返回底层 EmptyDea Core 客户端。
-func (f *Frame) Client() *client.Client {
+func (f *Frame) Client() frame_api.Client {
 	return f.client
 }
 

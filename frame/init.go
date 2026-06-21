@@ -3,14 +3,9 @@
 package frame
 
 import (
-	"context"
-	"errors"
 	"fmt"
-	"runtime"
 
-	client "github.com/EmptyDea-Team/EmptyDea-core-client"
-	core_server "github.com/EmptyDea-Team/EmptyDea-core/frame/EmptyDeaCore/server"
-	"github.com/google/uuid"
+	core_direct_client "github.com/EmptyDea-Team/EmptyDea-core/frame/EmptyDeaCore/client"
 )
 
 func (f *Frame) initClient() error {
@@ -21,29 +16,7 @@ func (f *Frame) initClient() error {
 		return fmt.Errorf("Frame.initClient: nil client")
 	}
 
-	address := "fatalder-" + uuid.NewString()
-	network := embeddedCoreNetwork()
-	listener, err := core_server.Listen(network, address, nil)
-	if err != nil {
-		return fmt.Errorf("Frame.initClient: listen embedded core: %w", err)
-	}
-
-	coreClient, err := client.DialContext(context.Background(), network, address)
-	if err != nil {
-		_ = listener.Close()
-		return fmt.Errorf("Frame.initClient: dial embedded core: %w", err)
-	}
-
-	f.client = coreClient
-	f.closer = func() error {
-		return errors.Join(coreClient.Close(), listener.Close())
-	}
+	f.client = core_direct_client.New(nil)
+	f.closer = f.client.Close
 	return nil
-}
-
-func embeddedCoreNetwork() string {
-	if runtime.GOOS == "windows" {
-		return "pipe"
-	}
-	return "shmipc"
 }
