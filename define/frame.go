@@ -16,9 +16,11 @@ type Frame interface {
 	AddTask(task Task) Frame
 	// 运行所有任务
 	Start() error
+	// 暂停当前任务
 	Pause() error
+	// 恢复当前任务并继续剩余任务
 	Resume() error
-	// 停止所有任务
+	// 停止当前任务
 	Stop() error
 	// 停止并关闭 Client
 	Close() error

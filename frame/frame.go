@@ -67,38 +67,48 @@ func (f *Frame) Start() error {
 	return nil
 }
 
-// Pause 暂停所有任务。
+// Pause 暂停当前任务。
 func (f *Frame) Pause() error {
-	for i := len(f.tasks) - 1; i >= 0; i-- {
-		f.currentTaskIndex = i
-		task := f.tasks[i]
-		if err := task.Pause(); err != nil {
-			return fmt.Errorf("Frame.Pause: pause task %q: %w", task.Name(), err)
-		}
+	task := f.currentTask()
+	if task == nil {
+		return nil
+	}
+	if err := task.Pause(); err != nil {
+		return fmt.Errorf("Frame.Pause: pause task %q: %w", task.Name(), err)
 	}
 	return nil
 }
 
-// Resume 按添加顺序恢复所有任务。
+// Resume 恢复当前任务，并在其完成后继续执行剩余任务。
 func (f *Frame) Resume() error {
-	for i, task := range f.tasks {
+	task := f.currentTask()
+	if task == nil {
+		return nil
+	}
+	if err := task.Resume(); err != nil {
+		return fmt.Errorf("Frame.Resume: resume task %q: %w", task.Name(), err)
+	}
+	for i := f.currentTaskIndex + 1; i < len(f.tasks); i++ {
 		f.currentTaskIndex = i
-		if err := task.Resume(); err != nil {
-			return fmt.Errorf("Frame.Resume: resume task %q: %w", task.Name(), err)
+		task = f.tasks[i]
+		if err := task.Start(); err != nil {
+			return fmt.Errorf("Frame.Resume: start task %q: %w", task.Name(), err)
 		}
 	}
 	return nil
 }
 
-// Stop 停止所有任务。
+// Stop 停止当前任务，并将当前任务索引重置为 0。
 func (f *Frame) Stop() error {
-	for i := len(f.tasks) - 1; i >= 0; i-- {
-		f.currentTaskIndex = i
-		task := f.tasks[i]
-		if err := task.Stop(); err != nil {
-			return fmt.Errorf("Frame.Stop: stop task %q: %w", task.Name(), err)
-		}
+	task := f.currentTask()
+	if task == nil {
+		f.currentTaskIndex = 0
+		return nil
 	}
+	if err := task.Stop(); err != nil {
+		return fmt.Errorf("Frame.Stop: stop task %q: %w", task.Name(), err)
+	}
+	f.currentTaskIndex = 0
 	return nil
 }
 
@@ -114,6 +124,13 @@ func (f *Frame) Close() error {
 		return fmt.Errorf("Frame.Close: stop core connection: %w", err)
 	}
 	return nil
+}
+
+func (f *Frame) currentTask() define.Task {
+	if f.currentTaskIndex < 0 || f.currentTaskIndex >= len(f.tasks) {
+		return nil
+	}
+	return f.tasks[f.currentTaskIndex]
 }
 
 var _ define.Frame = (*Frame)(nil)
