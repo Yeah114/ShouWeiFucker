@@ -51,6 +51,21 @@ func (f *Frame) CurrentTaskIndex() int {
 	return f.currentTaskIndex
 }
 
+// Connect 通过 Ping 检查 Core 客户端是否可用。
+func (f *Frame) Connect(ctx context.Context) error {
+	if f.client == nil {
+		return fmt.Errorf("Frame.Connect: nil client")
+	}
+	ok, err := f.client.Frame().Ping(ctx)
+	if err != nil {
+		return fmt.Errorf("Frame.Connect: ping core: %w", err)
+	}
+	if !ok {
+		return fmt.Errorf("Frame.Connect: ping core failed")
+	}
+	return nil
+}
+
 // AddTask 添加任务到框架并返回自身，便于链式调用。
 func (f *Frame) AddTask(task define.Task) define.Frame {
 	f.tasks = append(f.tasks, task)

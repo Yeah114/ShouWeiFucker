@@ -1,6 +1,8 @@
 package define
 
 import (
+	"context"
+
 	"github.com/EmptyDea-Team/EmptyDea-core-client"
 	"github.com/asaskevich/EventBus"
 )
@@ -12,6 +14,8 @@ type Frame interface {
 	Tasks() []Task
 	// 当前任务索引
 	CurrentTaskIndex() int
+	// 连接并检查 Core 可用性
+	Connect(ctx context.Context) error
 	// 添加任务
 	AddTask(task Task) Frame
 	// 运行所有任务
