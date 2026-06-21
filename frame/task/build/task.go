@@ -108,7 +108,6 @@ type BuildTask struct {
 	chunkManager *chunk_manager.ChunkManager
 	blockBuilder *block_builder.BlockBuilder
 	limiter      ratelimit.Limiter
-	initOnce     sync.Once
 	runMu        sync.Mutex
 	runCtx       context.Context
 	runCancel    context.CancelFunc

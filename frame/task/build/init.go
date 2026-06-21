@@ -5,7 +5,6 @@ import (
 	"os"
 	"strconv"
 	"strings"
-	"sync"
 
 	"github.com/EmptyDea-Team/bedrock-world-operator/block"
 	bwo_world "github.com/EmptyDea-Team/bedrock-world-operator/world"
@@ -70,31 +69,19 @@ func (b *BuildTask) init() error {
 	return nil
 }
 
-// Init 初始化构建任务运行时依赖，并保证同一个任务实例只会执行一次实际初始化。
+// Init 初始化构建任务运行时依赖。
+//
+// 每次调用都会按当前 checkpoint 重新创建运行时对象；如果旧世界已打开，会先关闭旧世界。
 func (b *BuildTask) Init() error {
-	var err error
-	b.initOnce.Do(func() {
-		err = b.init()
-	})
-	if err != nil {
+	b.cancelRun()
+	b.resetRuntime()
+	if err := b.init(); err != nil {
 		return fmt.Errorf("BuildTask.Init: %w", err)
 	}
 	return nil
 }
 
-// Reinit 按当前 checkpoint 重新初始化运行时依赖。
-//
-// Resume 会使用它重新读取 CurrentChunk，避免复用中断前已经推进过的 ChunkManager 内部进度。
-func (b *BuildTask) Reinit() error {
-	b.cancelRun()
-	b.resetRuntime()
-	if err := b.Init(); err != nil {
-		return fmt.Errorf("BuildTask.Reinit: %w", err)
-	}
-	return nil
-}
-
-// resetRuntime 释放旧运行时对象，并允许下一次 Init 重新执行。
+// resetRuntime 释放旧运行时对象。
 func (b *BuildTask) resetRuntime() {
 	if b.world != nil && b.world.World() != nil {
 		_ = b.world.World().CloseWorld()
@@ -102,7 +89,6 @@ func (b *BuildTask) resetRuntime() {
 	b.world = nil
 	b.chunkManager = nil
 	b.blockBuilder = nil
-	b.initOnce = sync.Once{}
 }
 
 // openBedrockWorld 根据 WorldPath 类型打开源世界。
