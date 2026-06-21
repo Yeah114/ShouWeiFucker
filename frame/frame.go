@@ -11,9 +11,10 @@ import (
 
 // Frame 是 Fatalder 的运行框架实现，负责持有 Core 客户端、事件总线和任务列表。
 type Frame struct {
-	client   *client.Client
-	eventBus EventBus.Bus
-	tasks    []define.Task
+	client           *client.Client
+	eventBus         EventBus.Bus
+	Tasks            []define.Task
+	CurrentTaskIndex int
 }
 
 // New 创建一个默认事件总线的 Frame。
@@ -41,13 +42,14 @@ func (f *Frame) EventBus() EventBus.Bus {
 
 // AddTask 添加任务到框架并返回自身，便于链式调用。
 func (f *Frame) AddTask(task define.Task) define.Frame {
-	f.tasks = append(f.tasks, task)
+	f.Tasks = append(f.Tasks, task)
 	return f
 }
 
 // Run 按添加顺序启动所有任务。
 func (f *Frame) Run() error {
-	for _, task := range f.tasks {
+	for i, task := range f.Tasks {
+		f.CurrentTaskIndex = i
 		if err := task.Start(); err != nil {
 			return fmt.Errorf("Frame.Run: start task %q: %w", task.Name(), err)
 		}
@@ -57,8 +59,9 @@ func (f *Frame) Run() error {
 
 // Stop 停止所有任务。
 func (f *Frame) Stop() error {
-	for i := len(f.tasks) - 1; i >= 0; i-- {
-		task := f.tasks[i]
+	for i := len(f.Tasks) - 1; i >= 0; i-- {
+		f.CurrentTaskIndex = i
+		task := f.Tasks[i]
 		if err := task.Pause(); err != nil {
 			return fmt.Errorf("Frame.Stop: pause task %q: %w", task.Name(), err)
 		}
@@ -68,8 +71,9 @@ func (f *Frame) Stop() error {
 
 // Close 停止所有任务并关闭 Core 连接。
 func (f *Frame) Close() error {
-	for i := len(f.tasks) - 1; i >= 0; i-- {
-		task := f.tasks[i]
+	for i := len(f.Tasks) - 1; i >= 0; i-- {
+		f.CurrentTaskIndex = i
+		task := f.Tasks[i]
 		if err := task.Close(); err != nil {
 			return fmt.Errorf("Frame.Close: close task %q: %w", task.Name(), err)
 		}
