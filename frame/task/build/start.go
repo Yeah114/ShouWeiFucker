@@ -20,7 +20,7 @@ func (b *BuildTask) Start() error {
 //
 // 当前阶段只实现普通方块构建；后续清理、NBT 方块、命令方块升级、等待区块加载等流程都应接入这里。
 func (b *BuildTask) run(ctx context.Context) error {
-	b.publish(EventNameRunStart)
+	b.publish(EventNameRunStart, b.world.Size())
 	for {
 		progress, total := b.chunkManager.Progress()
 		if progress >= total {

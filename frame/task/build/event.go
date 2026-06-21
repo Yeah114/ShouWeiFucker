@@ -12,7 +12,7 @@ const (
 	EventNameInitFinish = Name + ".Init.Finish"
 
 	// EventNameRunStart 构建主流程开始事件。
-	// 参数：无。
+	// 参数：size define.Size。
 	EventNameRunStart = Name + ".Run.Start"
 	// EventNameRunChunkGroupStart 区块组开始处理事件。
 	// 参数：progress int, total int。
