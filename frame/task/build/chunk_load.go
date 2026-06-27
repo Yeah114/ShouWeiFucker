@@ -2,11 +2,9 @@ package build
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"time"
 
-	packet_pb "github.com/EmptyDea-Team/EmptyDea-core-api/pb/minecraft/protocol/packet"
 	build_utils "github.com/Yeah114/Fatalder/frame/task/build/utils"
 
 	"github.com/Yeah114/Fatalder/define"
@@ -50,10 +48,6 @@ func (b *BuildTask) waitChunkLoad(ctx context.Context, groupPos define.ChunkPos)
 
 	b.publish(EventNameRunChunkGroupWaitLoadStart, groupPos)
 	for attempt := 1; ; attempt++ {
-		if !b.checkContext() {
-			return fmt.Errorf("BuildTask.waitChunkLoad: %w", context.Canceled)
-		}
-
 		resp, timeout, err := b.sendWSCommandWithTimeout(ctx, command, chunkLoadProbeTimeout)
 		if err != nil && !timeout {
 			return fmt.Errorf("BuildTask.waitChunkLoad: probe chunk load: %w", err)
@@ -85,19 +79,4 @@ func (b *BuildTask) waitChunkLoad(ctx context.Context, groupPos define.ChunkPos)
 		case <-timer.C:
 		}
 	}
-}
-
-// sendWSCommandWithTimeout 给当前 WebSocket 命令添加一次性超时。
-func (b *BuildTask) sendWSCommandWithTimeout(ctx context.Context, command string, timeout time.Duration) (resp *packet_pb.CommandOutput, isTimeout bool, err error) {
-	probeCtx, cancel := context.WithTimeout(ctx, timeout)
-	defer cancel()
-
-	output, err := b.sendWSCommandWithResp(probeCtx, command)
-	if err == nil {
-		return output, false, nil
-	}
-	if errors.Is(probeCtx.Err(), context.DeadlineExceeded) || errors.Is(err, context.DeadlineExceeded) {
-		return nil, true, nil
-	}
-	return nil, false, fmt.Errorf("BuildTask.sendWSCommandWithTimeout: %w", err)
 }

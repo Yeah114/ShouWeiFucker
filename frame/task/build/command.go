@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"math"
+	"time"
 
 	packet_pb "github.com/EmptyDea-Team/EmptyDea-core-api/pb/minecraft/protocol/packet"
 	"github.com/Yeah114/Fatalder/define"
@@ -11,7 +12,7 @@ import (
 
 // takeCommandLimit 在发送命令前应用任务限速器。
 func (b *BuildTask) takeCommandLimit() {
-return
+	return
 	if b.limiter == nil {
 		return
 	}
@@ -20,6 +21,9 @@ return
 
 // sendSettingsCommand 发送设置类命令，并在发送前应用任务限速。
 func (b *BuildTask) sendSettingsCommand(ctx context.Context, command string, dimensional bool) error {
+	if !b.checkContext() {
+		return fmt.Errorf("BuildTask.sendSettingsCommand: %w", context.Canceled)
+	}
 	b.takeCommandLimit()
 	if err := b.frame.Client().GameInterface().Commands().SendSettingsCommand(ctx, command, dimensional); err != nil {
 		return fmt.Errorf("BuildTask.sendSettingsCommand: %w", err)
@@ -29,6 +33,9 @@ func (b *BuildTask) sendSettingsCommand(ctx context.Context, command string, dim
 
 // sendPlayerCommand 发送玩家命令，并在发送前应用任务限速。
 func (b *BuildTask) sendPlayerCommand(ctx context.Context, command string) error {
+	if !b.checkContext() {
+		return fmt.Errorf("BuildTask.sendPlayerCommand: %w", context.Canceled)
+	}
 	b.takeCommandLimit()
 	if err := b.frame.Client().GameInterface().Commands().SendPlayerCommand(ctx, command); err != nil {
 		return fmt.Errorf("BuildTask.sendPlayerCommand: %w", err)
@@ -38,6 +45,9 @@ func (b *BuildTask) sendPlayerCommand(ctx context.Context, command string) error
 
 // sendWSCommand 发送 WebSocket 命令，并在发送前应用任务限速。
 func (b *BuildTask) sendWSCommand(ctx context.Context, command string) error {
+	if !b.checkContext() {
+		return fmt.Errorf("BuildTask.sendWSCommand: %w", context.Canceled)
+	}
 	b.takeCommandLimit()
 	if err := b.frame.Client().GameInterface().Commands().SendWSCommand(ctx, command); err != nil {
 		return fmt.Errorf("BuildTask.sendWSCommand: %w", err)
@@ -47,6 +57,9 @@ func (b *BuildTask) sendWSCommand(ctx context.Context, command string) error {
 
 // sendWSCommandWithResp 发送 WebSocket 命令并返回命令输出，在发送前应用任务限速。
 func (b *BuildTask) sendWSCommandWithResp(ctx context.Context, command string) (*packet_pb.CommandOutput, error) {
+	if !b.checkContext() {
+		return nil, fmt.Errorf("BuildTask.sendWSCommandWithResp: %w", context.Canceled)
+	}
 	b.takeCommandLimit()
 	resp, err := b.frame.Client().GameInterface().Commands().SendWSCommandWithResp(ctx, command)
 	if err != nil {
@@ -55,8 +68,23 @@ func (b *BuildTask) sendWSCommandWithResp(ctx context.Context, command string) (
 	return resp, nil
 }
 
+// sendWSCommandWithTimeout 给当前 WebSocket 命令添加一次性超时。
+func (b *BuildTask) sendWSCommandWithTimeout(ctx context.Context, command string, timeout time.Duration) (resp *packet_pb.CommandOutput, isTimeout bool, err error) {
+	probeCtx, cancel := context.WithTimeout(ctx, timeout)
+	defer cancel()
+
+	output, err := b.sendWSCommandWithResp(probeCtx, command)
+	if err == nil {
+		return output, false, nil
+	}
+	return nil, false, fmt.Errorf("BuildTask.sendWSCommandWithTimeout: %w", err)
+}
+
 // sendChat 发送聊天消息，并在发送前应用任务限速。
 func (b *BuildTask) sendChat(ctx context.Context, content string) error {
+	if !b.checkContext() {
+		return fmt.Errorf("BuildTask.sendChat: %w", context.Canceled)
+	}
 	b.takeCommandLimit()
 	if err := b.frame.Client().GameInterface().Commands().SendChat(ctx, content); err != nil {
 		return fmt.Errorf("BuildTask.sendChat: %w", err)

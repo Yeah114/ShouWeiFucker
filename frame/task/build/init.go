@@ -40,7 +40,10 @@ func (b *BuildTask) init() error {
 	b.chunkManager = nil
 	b.blockBuilder = nil
 
-	b.limiter = ratelimit.New(b.speed())
+	speed := b.speed()
+	if speed > 0 {
+		b.limiter = ratelimit.New(speed)
+	}
 
 	b.publish(EventNameInitOpenWorld, b.WorldPath)
 	bedrockWorld, err := b.openBedrockWorld()
@@ -117,9 +120,9 @@ func (b *BuildTask) openBedrockWorld() (*bwo_world.BedrockWorld, error) {
 	return db, nil
 }
 
-// speed 返回命令发送速度，配置为空或非法时使用默认值。
+// speed 返回命令发送速度，配置为空时使用默认值。
 func (b *BuildTask) speed() int {
-	if b.Speed == nil || *b.Speed <= 0 {
+	if b.Speed == nil {
 		return defaultSpeed
 	}
 	return *b.Speed
