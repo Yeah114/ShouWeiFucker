@@ -12,7 +12,9 @@ import (
 // Bedrock 的 fill 存在体积上限。
 // 用户要求“不能超过 32767”，因此这里严格使用 32766 作为安全上限，
 // 避免任何边界值在不同服务端/转发层中产生兼容性问题。
-const maxFillVolume = 32766
+const MaxFillVolume = 32766
+
+const maxFillVolume = MaxFillVolume
 
 // blockInfo 是运行时 ID 解码后的轻量缓存结果。
 // 这里缓存 name/state 的目的是避免在大体量结构生成命令时反复做
